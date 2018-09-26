@@ -31,7 +31,7 @@ pipeline {
                         }
                     }
                     steps {
-                        sh '''git submodule update --init --recursive
+                        sh '''set -x; env; git submodule update --init --recursive
                               utils/check_modules.sh'''
                     }
                     post {
@@ -117,7 +117,10 @@ pipeline {
                         }
                         unstash 'CentOS-install'
                         unstash 'CentOS-build-vars'
-                        sh '''bash ftest.sh quick
+                        sh '''if git show -s --format=%B | grep "^Skip-test: true"; then
+                                  exit 0
+                              fi
+                              bash ftest.sh quick
                               rm -rf src/tests/ftest/avocado/job-results/*/html/ "Functional quick"/
                               mkdir "Functional quick"/
                               [ -f install/tmp/daos.log ] && mv install/tmp/daos.log "Functional quick"/
@@ -141,7 +144,10 @@ pipeline {
                         unstash 'CentOS-tests'
                         unstash 'CentOS-install'
                         unstash 'CentOS-build-vars'
-                        sh '''HOSTPREFIX=wolf-53 bash -x utils/run_test.sh --init
+                        sh '''if git show -s --format=%B | grep "^Skip-test: true"; then
+                                  exit 0
+                              fi
+                              HOSTPREFIX=wolf-53 bash -x utils/run_test.sh --init
                               rm -rf run_test.sh/
                               mkdir run_test.sh/
                               [ -f /tmp/daos.log ] && mv /tmp/daos.log run_test.sh/'''
@@ -161,7 +167,10 @@ pipeline {
                             deleteDir()
                         }
                         unstash 'CentOS-install'
-                        sh '''trap 'rm -rf DaosTestMulti-All/
+                        sh '''if git show -s --format=%B | grep "^Skip-test: true"; then
+                                  exit 0
+                              fi
+                              trap 'rm -rf DaosTestMulti-All/
                                     mkdir DaosTestMulti-All/
                                     [ -f daos.log ] && mv daos.log DaosTestMulti-All
                                     [ -f results.xml ] && mv -f results.xml DaosTestMulti-All' EXIT
@@ -183,7 +192,10 @@ pipeline {
                             deleteDir()
                         }
                         unstash 'CentOS-install'
-                        sh '''trap 'rm -rf DaosTestMulti-Degraded/
+                        sh '''if git show -s --format=%B | grep "^Skip-test: true"; then
+                                  exit 0
+                              fi
+                              trap 'rm -rf DaosTestMulti-Degraded/
                                     mkdir DaosTestMulti-Degraded/
                                     [ -f daos.log ] && mv daos.log DaosTestMulti-Degraded
                                     [ -f results.xml ] && mv -f results.xml DaosTestMulti-Degraded' EXIT
@@ -205,7 +217,10 @@ pipeline {
                             deleteDir()
                         }
                         unstash 'CentOS-install'
-                        sh '''trap 'rm -rf DaosTestMulti-Rebuild/
+                        sh '''if git show -s --format=%B | grep "^Skip-test: true"; then
+                                  exit 0
+                              fi
+                              trap 'rm -rf DaosTestMulti-Rebuild/
                                     mkdir DaosTestMulti-Rebuild/
                                     [ -f daos.log ] && mv daos.log DaosTestMulti-Rebuild
                                     [ -f results.xml ] && mv -f results.xml DaosTestMulti-Rebuild' EXIT

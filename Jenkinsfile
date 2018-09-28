@@ -31,6 +31,8 @@ pipeline {
                         }
                     }
                     steps {
+                        checkout scm
+                        // Need the jenkins module to do linting
                         checkout([
                             $class: 'GitSCM',
                             branches: [[name: 'refs/heads/master']],
@@ -40,8 +42,8 @@ pipeline {
                             userRemoteConfigs: [[credentialsId: '084f0cb4-6db2-4fc7-86f2-3b890d98a9f2',
                                                  url: 'https://review.hpdd.intel.com/exascale/jenkins']]
                         ])
-
                         sh '''git submodule update --init --recursive
+                              ls -l
                               utils/check_modules.sh'''
                     }
                     post {

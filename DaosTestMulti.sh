@@ -226,9 +226,10 @@ if ! ssh "$CLIENT_VM" "daos_server_pid=\$(cat /tmp/daos_server_pid)
     # cmocka's XML results are not JUnit compliant as it creates multiple
     # <testsuites> blocks and only one is allowed
     # https://gitlab.com/cmocka/cmocka/issues/5
-    trap 'set -x; sed -i -e '\"'\"'2!{/<testsuites>/d;}'\"'\"' -e '\"'\"'\$!{/<\\/testsuites>/d;}'\"'\"' \"${daospath}\"/results.xml' EXIT
+    #https://gitlab.com/cmocka/cmocka/issues/5#note_104981656
+    #trap 'set -x; sed -i -e '\"'\"'2!{/<testsuites>/d;}'\"'\"' -e '\"'\"'\$!{/<\\/testsuites>/d;}'\"'\"' \"${daospath}\"/results.xml' EXIT
     rm -f \"${daospath}\"/results.xml
-    CMOCKA_XML_FILE=\"${daospath}\"/results.xml CMOCKA_MESSAGE_OUTPUT=xml \"${daospath}\"/install/bin/orterun --output-filename \"$daospath\"/daos_test.out --np 1 --ompi-server file:\"$daospath\"/urifile -x ABT_ENV_MAX_NUM_XSTREAMS=100 -x PATH=\"$PATH\" -x CRT_PHY_ADDR_STR=\"$CRT_PHY_ADDR_STR\" -x ABT_MAX_NUM_XSTREAMS=100 -x LD_LIBRARY_PATH=\"$LD_LIBRARY_PATH\" -x D_LOG_FILE=\"$daospath\"/daos.log -x OFI_INTERFACE=\"$CLIENT_OFI_INTERFACE\" daos_test \"$TESTS\""; then
+    CMOCKA_XML_FILE=\"${daospath}\"/%g_results.xml CMOCKA_MESSAGE_OUTPUT=xml \"${daospath}\"/install/bin/orterun --output-filename \"$daospath\"/daos_test.out --np 1 --ompi-server file:\"$daospath\"/urifile -x ABT_ENV_MAX_NUM_XSTREAMS=100 -x PATH=\"$PATH\" -x CRT_PHY_ADDR_STR=\"$CRT_PHY_ADDR_STR\" -x ABT_MAX_NUM_XSTREAMS=100 -x LD_LIBRARY_PATH=\"$LD_LIBRARY_PATH\" -x D_LOG_FILE=\"$daospath\"/daos.log -x OFI_INTERFACE=\"$CLIENT_OFI_INTERFACE\" daos_test \"$TESTS\""; then
     if [ "${PIPESTATUS[0]}" = 199 ]; then
         echo "daos_server not running"
         pdsh -R ssh -S -w "${HOSTPREFIX}"vm[1-8] "if [ -f /tmp/daos_server.out ]; then cat /tmp/daos_server.out; fi" | dshbak -c

@@ -173,13 +173,13 @@ pipeline {
                               trap 'rm -rf DaosTestMulti-All/
                                     mkdir DaosTestMulti-All/
                                     [ -f daos.log ] && mv daos.log DaosTestMulti-All
-                                    [ -f results.xml ] && mv -f results.xml DaosTestMulti-All' EXIT
+                                    ls *results.xml && mv -f *results.xml DaosTestMulti-All' EXIT
                               bash DaosTestMulti.sh || true'''
                     }
                     post {
                         always {
                             archiveArtifacts artifacts: 'DaosTestMulti-All/**'
-                            junit allowEmptyResults: false, testResults: 'DaosTestMulti-All/results.xml'
+                            junit allowEmptyResults: false, testResults: 'DaosTestMulti-All/*results.xml'
                         }
                     }
                 }
@@ -198,13 +198,13 @@ pipeline {
                               trap 'rm -rf DaosTestMulti-Degraded/
                                     mkdir DaosTestMulti-Degraded/
                                     [ -f daos.log ] && mv daos.log DaosTestMulti-Degraded
-                                    [ -f results.xml ] && mv -f results.xml DaosTestMulti-Degraded' EXIT
+                                    ls *results.xml && mv -f *results.xml DaosTestMulti-Degraded' EXIT
                               bash DaosTestMulti.sh -d || true'''
                     }
                     post {
                         always {
                             archiveArtifacts artifacts: 'DaosTestMulti-Degraded/**'
-                            junit allowEmptyResults: false, testResults: 'DaosTestMulti-Degraded/results.xml'
+                            junit allowEmptyResults: false, testResults: 'DaosTestMulti-Degraded/*results.xml'
                         }
                     }
                 }
@@ -223,13 +223,13 @@ pipeline {
                               trap 'rm -rf DaosTestMulti-Rebuild/
                                     mkdir DaosTestMulti-Rebuild/
                                     [ -f daos.log ] && mv daos.log DaosTestMulti-Rebuild
-                                    [ -f results.xml ] && mv -f results.xml DaosTestMulti-Rebuild' EXIT
+                                    ls *results.xml && mv -f *results.xml DaosTestMulti-Rebuild' EXIT
                               bash DaosTestMulti.sh -r || true'''
                     }
                     post {
                         always {
                             archiveArtifacts artifacts: 'DaosTestMulti-Rebuild/**'
-                            junit allowEmptyResults: false, testResults: 'DaosTestMulti-Rebuild/results.xml'
+                            junit allowEmptyResults: false, testResults: 'DaosTestMulti-Rebuild/*results.xml'
                         }
                     }
                 }

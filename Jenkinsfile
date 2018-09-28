@@ -1,4 +1,3 @@
-// Phyl
 pipeline {
     agent none
 

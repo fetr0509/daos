@@ -32,7 +32,7 @@ pipeline {
                         }
                     }
                     steps {
-                        sh 'env'
+                        sh 'env; echo "$GERRIT_ACCOUNT" > /tmp/foo; cat /tmp/foo'
                         checkout scm: [
                             $class: 'GitSCM',
                             branches: [name: 'refs/heads/master'],
@@ -42,7 +42,7 @@ pipeline {
                             userRemoteConfigs: [
                                 credentialsId: '084f0cb4-6db2-4fc7-86f2-3b890d98a9f2',
                                 name: 'jenkins',
-                                url: 'git clone https://review.hpdd.intel.com/exascale/jenkins']
+                                url: 'https://review.hpdd.intel.com/exascale/jenkins']
                         ]
                         sh '''git submodule update --init --recursive
                               utils/check_modules.sh'''

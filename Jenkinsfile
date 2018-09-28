@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         SHELL = '/bin/bash'
-        GERRIT_ACCOUNT = credentials('084f0cb4-6db2-4fc7-86f2-3b890d98a9f2'
+        GERRIT_ACCOUNT = credentials('084f0cb4-6db2-4fc7-86f2-3b890d98a9f2')
     }
 
     // triggers {
@@ -32,23 +32,18 @@ pipeline {
                         }
                     }
                     steps {
-                        sh 'set -x; env'
-
+                        sh 'env'
                         checkout scm: [
-                                $class: 'GitSCM',
-                                url: https://$GERRIT_ACCOUNT@review.hpdd.intel.com:29418/exascale/jenkins
-                                branches: scm.branches,
-                                doGenerateSubmoduleConfigurations: false,
-                                extensions: [[$class: 'SubmoduleOption',
-                                              disableSubmodules: false,
-                                              parentCredentials: false,
-                                              recursiveSubmodules: true,
-                                              reference: '',
-                                              trackingSubmodules: false]],
-                                submoduleCfg: [],
-                                userRemoteConfigs: scm.userRemoteConfigs
+                            $class: 'GitSCM',
+                            branches: [name: 'refs/heads/master'],
+                            doGenerateSubmoduleConfigurations: false,
+                            extensions: [],
+                            submoduleCfg: [],
+                            userRemoteConfigs: [
+                                credentialsId: '084f0cb4-6db2-4fc7-86f2-3b890d98a9f2',
+                                name: 'jenkins',
+                                url: 'git clone https://review.hpdd.intel.com/exascale/jenkins']
                         ]
-
                         sh '''git submodule update --init --recursive
                               utils/check_modules.sh'''
                     }

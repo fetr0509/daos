@@ -36,7 +36,7 @@ pipeline {
                         sh '''pwd
                               ls -l ..
                               git submodule status
-                              git submodule update --init --recursive'''
+                              git submodule update --init --recursive
                               git submodule status
                               ls -l
                               ls -l utils'''
@@ -52,7 +52,7 @@ pipeline {
                         sh '''pwd
                               ls -l ..
                               git submodule status
-                              git submodule update --init --recursive'''
+                              git submodule update --init --recursive
                               git submodule status
                               ls -l
                               ls -l utils

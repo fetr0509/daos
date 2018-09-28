@@ -33,7 +33,26 @@ pipeline {
                     steps {
                         sh '''rm -rf *
                               ls -l'''
-                        checkout scm
+                        //checkout scm
+                        checkout([$class: 'GitSCM',
+                            branches: scm.branches,
+                            extensions: scm.extensions + [[$class: 'SubmoduleOption',
+                                disableSubmodules: false,
+                                parentCredentials: true,
+                                recursiveSubmodules: true,
+                                reference: '', trackingSubmodules:
+                            false]],
+                            userRemoteConfigs: scm.userRemoteConfigs
+                        ])
+                        checkout([
+                            $class: 'GitSCM',
+                            branches: [[name: 'refs/heads/master']],
+                            doGenerateSubmoduleConfigurations: false,
+                            extensions: [[$class: 'RelativeTargetDirectory', relativeTargetDir: 'jenkins']],
+                            submoduleCfg: [],
+                            userRemoteConfigs: [[credentialsId: '084f0cb4-6db2-4fc7-86f2-3b890d98a9f2',
+                                                 url: 'https://review.hpdd.intel.com/exascale/jenkins']]
+                        ])
                         // Need the jenkins module to do linting
                         sh '''pwd
                               ls -l
@@ -42,9 +61,6 @@ pipeline {
                               git submodule status
                               ls -l
                               ls -l utils'''
-checkout([$class: 'GitSCM', branches: [[name: 'refs/heads/master']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'RelativeTargetDirectory', relativeTargetDir: 'jenkins']],
-submoduleCfg: [], userRemoteConfigs: [[credentialsId: '084f0cb4-6db2-4fc7-86f2-3b890d98a9f2', url: 'https://review.hpdd.intel.com/exascale/jenkins']]])
-
                         checkout([
                             $class: 'GitSCM',
                             branches: [[name: 'refs/heads/master']],

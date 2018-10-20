@@ -42,10 +42,28 @@ run_test()
     fi
 }
 
+if [ "$1" = "--init" ]; then
+    INIT=true
+else
+    INIT=false
+fi
+
+if $INIT; then
+    sudo bash -c 'echo "1" > /proc/sys/kernel/sysrq'
+    if grep /mnt/daos\  /proc/mounts; then
+        sudo umount /mnt/daos
+    else
+        if [ ! -d /mnt/daos ]; then
+            sudo mkdir -p /mnt/daos
+        fi
+    fi
+    sudo mount -t tmpfs -o size=16G tmpfs /mnt/daos
+    df -h /mnt/daos
+    trap 'sudo umount /mnt/daos' EXIT
+fi
+
 if [ -d "/mnt/daos" ]; then
-    # shellcheck disable=SC1091
-    source ./.build_vars.sh
-    run_test "${SL_PREFIX}/bin/vos_tests" -A 500
+    run_test install/bin/vos_tests -A 500
     run_test src/common/tests/btree.sh ukey -s 20000
     run_test src/common/tests/btree.sh direct -s 20000
     run_test src/common/tests/btree.sh -s 20000
@@ -58,18 +76,16 @@ if [ -d "/mnt/daos" ]; then
     run_test build/src/vos/vea/tests/vea_ut
     run_test src/rdb/raft_tests/raft_tests.py
     # Environment variables specific to the rdb tests
-    export PATH=$SL_PREFIX/bin:$PATH
+    export PATH=install/bin:$PATH
     export OFI_INTERFACE=lo
-    #This is to temporarily solve the No such file error for
-    # libnvme_discover.so
-    export LD_LIBRARY_PATH=$SL_PREFIX/lib:${LD_LIBRARY_PATH}
-    run_test src/rdb/tests/rdb_test_runner.py "${SL_OMPI_PREFIX}"
+    run_test src/rdb/tests/rdb_test_runner.py "install"
 
     if [ $failed -eq 0 ]; then
         # spit out the magic string that the post build script looks for
         echo "SUCCESS! NO TEST FAILURES"
     else
         echo "FAILURE: $failed tests failed"
+        exit 1
     fi
 else
     echo "/mnt/daos isn't present for unit tests"

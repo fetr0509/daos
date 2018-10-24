@@ -80,20 +80,22 @@ done
 sudo rmdir $DAOS_BASE" 2>&1 | dshbak -c' EXIT
 
 # shellcheck disable=SC2029
-ssh "${HOSTPREFIX}"vm1 "set -x
+if ! ssh "${HOSTPREFIX}"vm1 "set -x
 rm -rf $DAOS_BASE/install/tmp
 mkdir -p $DAOS_BASE/install/tmp
 cd $DAOS_BASE
 export CRT_ATTACH_INFO_PATH=$DAOS_BASE/install/tmp
 export DAOS_SINGLETON_CLI=1
 export CRT_CTX_SHARE_ADDR=1
-export CRT_PHY_ADDR_STR=\"ofi+sockets\"
+export CRT_PHY_ADDR_STR=ofi+sockets
 export ABT_ENV_MAX_NUM_XSTREAMS=64
 export ABT_MAX_NUM_XSTREAMS=64
 export OFI_INTERFACE=eth0
 export OFI_PORT=23350
-export DD_LOG=$DAOS_BASE/install/tmp/daos.log
-export D_LOG_FILE=$DAOS_BASE/install/tmp/daos.log
+# At Oct2018 Longmond F2F it was decided that per-server logs are preferred
+# But now we need to collect them!
+export DD_LOG=/tmp/daos.log
+export D_LOG_FILE=/tmp/daos.log
 export D_LOG_MASK=DEBUG,RPC=ERR,MEM=ERR
 
 pushd src/tests/ftest
@@ -105,4 +107,12 @@ logs_dir = $DAOS_BASE/src/tests/ftest/avocado/job-results
 EOF
 
 # nowrun it!
-./launch.py \"${1:-quick}\""
+./launch.py \"${1:-quick}\""; then
+    rc="${PIPESTATUS[0]}"
+else
+    rc=0
+fi
+
+# collect the logs
+rpdcp -R ssh -w "${HOSTPREFIX}"vm[1-8] /tmp/\*daos.log "$DAOS_BASE"/install/tmp/
+exit "$rc"

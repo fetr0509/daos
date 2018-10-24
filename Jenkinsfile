@@ -127,37 +127,37 @@ pipeline {
                 }
             }
         }
+        stage('run_test.sh') {
+            agent {
+                label 'single'
+            }
+            steps {
+                runTest stashes: [ 'CentOS-tests', 'CentOS-install', 'CentOS-build-vars' ],
+                        script: 'LD_LIBRARY_PATH=install/lib64:install/lib HOSTPREFIX=wolf-53 bash -x utils/run_test.sh --init && echo "run_test.sh exited successfully with ${PIPESTATUS[0]}" || echo "run_test.sh exited failure with ${PIPESTATUS[0]}"',
+                      junit_files: null
+            }
+            post {
+                /* temporarily moved into runTest->stepResult due to JENKINS-39203
+                success {
+                    githubNotify credentialsId: 'daos-jenkins-commit-status', description: 'run_test.sh',  context: 'test/run_test.sh', status: 'SUCCESS'
+                }
+                unstable {
+                    githubNotify credentialsId: 'daos-jenkins-commit-status', description: 'run_test.sh',  context: 'test/run_test.sh', status: 'FAILURE'
+                }
+                failure {
+                    githubNotify credentialsId: 'daos-jenkins-commit-status', description: 'run_test.sh',  context: 'test/run_test.sh', status: 'ERROR'
+                }
+                */
+                always {
+                    sh '''rm -rf run_test.sh/
+                          mkdir run_test.sh/
+                          [ -f /tmp/daos.log ] && mv /tmp/daos.log run_test.sh/ || true'''
+                    archiveArtifacts artifacts: 'run_test.sh/**'
+                }
+            }
+        }
         stage('Test') {
             parallel {
-                stage('run_test.sh') {
-                    agent {
-                        label 'single'
-                    }
-                    steps {
-                        runTest stashes: [ 'CentOS-tests', 'CentOS-install', 'CentOS-build-vars' ],
-                                script: 'LD_LIBRARY_PATH=install/lib64:install/lib HOSTPREFIX=wolf-53 bash -x utils/run_test.sh --init && echo "run_test.sh exited successfully with ${PIPESTATUS[0]}" || echo "run_test.sh exited failure with ${PIPESTATUS[0]}"',
-                              junit_files: null
-                    }
-                    post {
-                        /* temporarily moved into runTest->stepResult due to JENKINS-39203
-                        success {
-                            githubNotify credentialsId: 'daos-jenkins-commit-status', description: 'run_test.sh',  context: 'test/run_test.sh', status: 'SUCCESS'
-                        }
-                        unstable {
-                            githubNotify credentialsId: 'daos-jenkins-commit-status', description: 'run_test.sh',  context: 'test/run_test.sh', status: 'FAILURE'
-                        }
-                        failure {
-                            githubNotify credentialsId: 'daos-jenkins-commit-status', description: 'run_test.sh',  context: 'test/run_test.sh', status: 'ERROR'
-                        }
-                        */
-                        always {
-                            sh '''rm -rf run_test.sh/
-                                  mkdir run_test.sh/
-                                  [ -f /tmp/daos.log ] && mv /tmp/daos.log run_test.sh/ || true'''
-                            archiveArtifacts artifacts: 'run_test.sh/**'
-                        }
-                    }
-                }
                 stage('Functional quick') {
                     agent {
                         label 'cluster_provisioner'
@@ -182,7 +182,7 @@ pipeline {
                         always {
                             sh '''rm -rf src/tests/ftest/avocado/job-results/*/html/ "Functional quick"/
                                   mkdir "Functional quick"/
-                                  [ -f install/tmp/daos.log ] && mv install/tmp/daos.log "Functional quick"/ || true
+                                  [ -f install/tmp/daos.log* ] && mv install/tmp/daos.log* "Functional quick"/ || true
                                   mv src/tests/ftest/avocado/job-results/** "Functional quick"/'''
                             junit 'Functional quick/*/results.xml'
                             archiveArtifacts artifacts: 'Functional quick/**'
@@ -217,8 +217,7 @@ pipeline {
                             sh '''rm -rf src/tests/ftest/avocado/job-results/*/html/ "Functional daos_test"/
                                   mkdir "Functional daos_test"/
                                   mv src/tests/ftest/avocado/job-results/** "Functional daos_test"/
-                                  ls install/tmp/*daos.log    && mv -f install/tmp/*daos.log    "Functional daos_test"/ || true
-                                  ls install/tmp/*results.xml && mv -f install/tmp/*results.xml "Functional daos_test"/ || true
+                                  ls install/tmp/*daos.log* && mv -f install/tmp/*daos.log* "Functional daos_test"/ || true
                                   ls "Functional daos_test"/ || true'''
                             //junit 'Functional daos_test/*/results.xml'
                             junit 'Functional daos_test/*_results.xml'

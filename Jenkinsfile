@@ -33,7 +33,7 @@ pipeline {
                     steps {
                         checkPatch user: GITHUB_USER_USR,
                                    password: GITHUB_USER_PSW,
-                                   jenkins_review: '20/33420/4'
+                                   jenkins_review: '20/33420/5'
                     }
                     post {
                         /* temporarily moved into stepResult due to JENKINS-39203

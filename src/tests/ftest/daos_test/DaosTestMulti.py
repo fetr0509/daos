@@ -74,8 +74,8 @@ class DaosTestMulti(Test):
             # rename on each of the servers
             for host in self.hostlist:
                 subprocess.check_call(["ssh", host,
-                                       "mv {1} {2}".format(logfile,
-                                                           new_logfile)])
+                                       "mv {} {}".format(logfile,
+                                                         new_logfile)])
         except KeyError:
             pass
 

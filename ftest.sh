@@ -54,7 +54,7 @@ rm -rf src/tests/ftest/avocado
 mkdir -p src/tests/ftest/avocado/job-results
 
 DAOS_BASE=${SL_OMPI_PREFIX%/install}
-pdsh -R ssh -S -w "${HOSTPREFIX}"vm[1-8] "set -x
+pdsh -R ssh -S -w "${HOSTPREFIX}"vm[1-8] "set -ex
 if grep /mnt/daos\\  /proc/mounts; then
     sudo umount /mnt/daos
 else
@@ -64,7 +64,9 @@ else
 fi
 sudo mkdir -p $DAOS_BASE
 sudo mount -t nfs $NFS_SERVER:$PWD $DAOS_BASE
-sudo mount -t tmpfs -o size=16G tmpfs /mnt/daos" 2>&1 | dshbak -c
+sudo mount -t tmpfs -o size=16G tmpfs /mnt/daos
+rm -rf /tmp/Functional_${1:-quick}/
+mkdir -p /tmp/Functional_${1:-quick}/" 2>&1 | dshbak -c
 
 # shellcheck disable=SC2154
 trap 'set +e
@@ -80,11 +82,11 @@ done
 sudo rmdir $DAOS_BASE" 2>&1 | dshbak -c' EXIT
 
 # shellcheck disable=SC2029
-if ! ssh "${HOSTPREFIX}"vm1 "set -x
-rm -rf $DAOS_BASE/install/tmp
-mkdir -p $DAOS_BASE/install/tmp
-cd $DAOS_BASE
-export CRT_ATTACH_INFO_PATH=$DAOS_BASE/install/tmp
+if ! ssh "${HOSTPREFIX}"vm1 "set -ex
+rm -rf install/tmp
+mkdir -p install/tmp
+cd $PWD
+export CRT_ATTACH_INFO_PATH=install/tmp
 export DAOS_SINGLETON_CLI=1
 export CRT_CTX_SHARE_ADDR=1
 export CRT_PHY_ADDR_STR=ofi+sockets
@@ -94,8 +96,8 @@ export OFI_INTERFACE=eth0
 export OFI_PORT=23350
 # At Oct2018 Longmond F2F it was decided that per-server logs are preferred
 # But now we need to collect them!
-export DD_LOG=/tmp/daos.log
-export D_LOG_FILE=/tmp/daos.log
+export DD_LOG=/tmp/Functional_${1:-quick}
+export D_LOG_FILE=/tmp/Functional_${1:-quick}
 export D_LOG_MASK=DEBUG,RPC=ERR,MEM=ERR
 
 pushd src/tests/ftest
@@ -103,7 +105,7 @@ pushd src/tests/ftest
 mkdir -p ~/.config/avocado/
 cat <<EOF > ~/.config/avocado/avocado.conf
 [datadir.paths]
-logs_dir = $DAOS_BASE/src/tests/ftest/avocado/job-results
+logs_dir = $PWD/src/tests/ftest/avocado/job-results
 EOF
 
 # nowrun it!
@@ -114,6 +116,6 @@ else
 fi
 
 # collect the logs
-rpdcp -R ssh -w "${HOSTPREFIX}"vm[1-8] /tmp/\*daos.log "$DAOS_BASE"/install/tmp/
-ls -l "$DAOS_BASE"/install/tmp/
+rpdcp -R ssh -w "${HOSTPREFIX}"vm[1-8] /tmp/Functional_"${1:-quick}"/\*daos.log install/tmp/
+ls -l install/tmp/
 exit "$rc"

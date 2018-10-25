@@ -25,6 +25,7 @@
 import os
 import sys
 import json
+import subprocess
 
 from avocado       import Test
 from avocado.utils import process
@@ -70,7 +71,11 @@ class DaosTestMulti(Test):
             dirname, filename = os.path.split(logfile)
             new_logfile = os.path.join(dirname, self.subtest_name + "_" + \
                                                 filename)
-            os.rename(logfile, new_logfile)
+            # rename on each of the servers
+            for host in self.hostlist:
+                subprocess.check_call(["ssh", host,
+                                       "mv {1} {2}".format(logfile,
+                                                           new_logfile)])
         except KeyError:
             pass
 

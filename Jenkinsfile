@@ -33,7 +33,7 @@ pipeline {
                     steps {
                         checkPatch user: GITHUB_USER_USR,
                                    password: GITHUB_USER_PSW,
-                                   jenkins_review: '20/33420/1'
+                                   jenkins_review: '20/33420/3'
                     }
                     post {
                         /* temporarily moved into stepResult due to JENKINS-39203
@@ -218,10 +218,11 @@ pipeline {
                             sh '''rm -rf src/tests/ftest/avocado/job-results/*/html/ "Functional daos_test"/
                                   mkdir "Functional daos_test"/
                                   mv src/tests/ftest/avocado/job-results/** "Functional daos_test"/
+                                  pwd
                                   ls install/tmp/*daos.log* && mv -f install/tmp/*daos.log* "Functional daos_test"/ || true
                                   ls "Functional daos_test"/ || true'''
                             //junit 'Functional daos_test/*/results.xml'
-                            junit 'Functional daos_test/*_results.xml'
+                            junit 'install/tmp/*results.xml'
                             archiveArtifacts artifacts: 'Functional daos_test/**'
                         }
                     }

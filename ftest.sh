@@ -25,6 +25,9 @@ restore_dist_files() {
 
 }
 
+# shellcheck disable=SC1091
+. .build_vars.sh
+
 #yum install python2-avocado.noarch                               \
 #            python2-avocado-plugins-output-html.noarch           \
 #            python2-avocado-plugins-varianter-yaml-to-mux.noarch \
@@ -47,9 +50,10 @@ sed -i.dist -e "s/- boro-A/- ${HOSTPREFIX}vm1/g" \
 trap 'set +e; restore_dist_files "${yaml_files[@]}"' EXIT
 
 # let's output to a dir in the tree
-rm -rf src/tests/ftest/avocado
+rm -rf src/tests/ftest/avocado ./_results.xml
 mkdir -p src/tests/ftest/avocado/job-results
 
+DAOS_BASE=${SL_OMPI_PREFIX%/install}
 pdsh -R ssh -S -w "${HOSTPREFIX}"vm[1-8] "set -ex
 if grep /mnt/daos\\  /proc/mounts; then
     sudo umount /mnt/daos
@@ -58,8 +62,8 @@ else
         sudo mkdir -p /mnt/daos
     fi
 fi
-sudo mkdir -p /tmp/daos
-sudo mount -t nfs $NFS_SERVER:$PWD /tmp/daos
+sudo mkdir -p $DAOS_BASE
+sudo mount -t nfs $NFS_SERVER:$PWD $DAOS_BASE
 sudo mount -t tmpfs -o size=16G tmpfs /mnt/daos
 rm -rf /tmp/Functional_${1:-quick}/
 mkdir -p /tmp/Functional_${1:-quick}/" 2>&1 | dshbak -c
@@ -70,19 +74,19 @@ restore_dist_files "${yaml_files[@]}"
 pdsh -R ssh -S -w ${HOSTPREFIX}vm[1-8] "sudo umount /mnt/daos
 x=0
 while [ \$x -lt 30 ] &&
-      grep /tmp/daos /proc/mounts &&
-      ! sudo umount /tmp/daos; do
+      grep $DAOS_BASE /proc/mounts &&
+      ! sudo umount $DAOS_BASE; do
     sleep 1
     let x=\$x+1
 done
-sudo rmdir /tmp/daos" 2>&1 | dshbak -c' EXIT
+sudo rmdir $DAOS_BASE" 2>&1 | dshbak -c' EXIT
 
 # shellcheck disable=SC2029
 if ! ssh "${HOSTPREFIX}"vm1 "set -ex
-rm -rf /tmp/daos/install/tmp
-mkdir -p /tmp/daos/install/tmp
-cd /tmp/daos
-export CRT_ATTACH_INFO_PATH=/tmp/daos/install/tmp
+rm -rf $DAOS_BASE/install/tmp
+mkdir -p $DAOS_BASE/install/tmp
+cd $DAOS_BASE
+export CRT_ATTACH_INFO_PATH=$DAOS_BASE/install/tmp
 export DAOS_SINGLETON_CLI=1
 export CRT_CTX_SHARE_ADDR=1
 export CRT_PHY_ADDR_STR=ofi+sockets
@@ -95,14 +99,13 @@ export OFI_PORT=23350
 export DD_LOG=/tmp/Functional_${1:-quick}
 export D_LOG_FILE=/tmp/Functional_${1:-quick}
 export D_LOG_MASK=DEBUG,RPC=ERR,MEM=ERR
-export LD_LIBRARY_PATH=/tmp/daos/install/lib64:/tmp/daos/install/lib
 
 pushd src/tests/ftest
 
 mkdir -p ~/.config/avocado/
 cat <<EOF > ~/.config/avocado/avocado.conf
 [datadir.paths]
-logs_dir = /tmp/daos/src/tests/ftest/avocado/job-results
+logs_dir = $DAOS_BASE/src/tests/ftest/avocado/job-results
 EOF
 
 # nowrun it!
@@ -114,6 +117,6 @@ fi
 
 # collect the logs
 rpdcp -R ssh -w "${HOSTPREFIX}"vm[1-8] \
-    /tmp/Functional_"${1:-quick}"/\*daos.log install/tmp/
+    /tmp/Functional_"${1:-quick}"/\*daos.log "$PWD"/
 ls -l install/tmp/
 exit "$rc"

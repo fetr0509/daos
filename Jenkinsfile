@@ -183,8 +183,9 @@ pipeline {
                         always {
                             sh '''rm -rf src/tests/ftest/avocado/job-results/*/html/ "Functional quick"/
                                   mkdir "Functional quick"/
-                                  [ -f install/tmp/daos.log* ] && mv install/tmp/daos.log* "Functional quick"/ || true
-                                  mv src/tests/ftest/avocado/job-results/** "Functional quick"/'''
+                                  ls daos.log* && mv daos.log* "Functional quick"/ || true
+                                  mv src/tests/ftest/avocado/job-results/* "Functional quick"/
+                                  ls -l "Functional quick"/ || true'''
                             junit 'Functional quick/*/results.xml'
                             archiveArtifacts artifacts: 'Functional quick/**'
                         }
@@ -219,10 +220,10 @@ pipeline {
                                   mkdir "Functional daos_test"/
                                   mv src/tests/ftest/avocado/job-results/** "Functional daos_test"/
                                   pwd
-                                  ls install/tmp/*daos.log* && mv -f install/tmp/*daos.log* "Functional daos_test"/ || true
-                                  ls "Functional daos_test"/ || true'''
+                                  ls *daos.log* && mv -f *daos.log* "Functional daos_test"/ || true
+                                  ls -l "Functional daos_test"/ || true'''
                             //junit 'Functional daos_test/*/results.xml'
-                            junit 'install/tmp/*results.xml'
+                            junit '*results.xml'
                             archiveArtifacts artifacts: 'Functional daos_test/**'
                         }
                     }

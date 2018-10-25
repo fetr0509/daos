@@ -115,4 +115,5 @@ fi
 
 # collect the logs
 rpdcp -R ssh -w "${HOSTPREFIX}"vm[1-8] /tmp/\*daos.log "$DAOS_BASE"/install/tmp/
+ls -l "$DAOS_BASE"/install/tmp/
 exit "$rc"

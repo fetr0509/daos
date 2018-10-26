@@ -96,8 +96,8 @@ export OFI_INTERFACE=eth0
 export OFI_PORT=23350
 # At Oct2018 Longmond F2F it was decided that per-server logs are preferred
 # But now we need to collect them!
-export DD_LOG=/tmp/Functional_${1:-quick}
-export D_LOG_FILE=/tmp/Functional_${1:-quick}
+export DD_LOG=/tmp/Functional_${1:-quick}/daos.log
+export D_LOG_FILE=/tmp/Functional_${1:-quick}/daos.log
 export D_LOG_MASK=DEBUG,RPC=ERR,MEM=ERR
 
 pushd src/tests/ftest

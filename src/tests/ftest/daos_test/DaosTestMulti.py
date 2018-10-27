@@ -34,8 +34,10 @@ sys.path.append('./util')
 sys.path.append('../util')
 sys.path.append('../../../utils/py')
 sys.path.append('./../../utils/py')
+# pylint: disable=wrong-import-position,import-error
 import ServerUtils
 import WriteHostFile
+# pylint: enable=wrong-import-position,import-error
 
 class DaosTestMulti(Test):
     """
@@ -74,8 +76,9 @@ class DaosTestMulti(Test):
             # rename on each of the servers
             for host in self.hostlist:
                 subprocess.check_call(["ssh", host,
-                                       "mv {} {}".format(logfile,
-                                                         new_logfile)])
+                                       "mv \\\"{}\\\" "
+                                       "\\\"{}\\\"".format(logfile,
+                                                           new_logfile)])
         except KeyError:
             pass
 

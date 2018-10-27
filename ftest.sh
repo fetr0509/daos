@@ -118,5 +118,5 @@ fi
 # collect the logs
 rpdcp -R ssh -w "${HOSTPREFIX}"vm[1-8] \
     /tmp/Functional_"${1:-quick}"/\*daos.log "$PWD"/
-ls -l install/tmp/
+ls -l
 exit "$rc"

@@ -50,11 +50,12 @@ sed -i.dist -e "s/- boro-A/- ${HOSTPREFIX}vm1/g" \
 trap 'set +e; restore_dist_files "${yaml_files[@]}"' EXIT
 
 # let's output to a dir in the tree
-rm -rf src/tests/ftest/avocado ./_results.xml
+rm -rf src/tests/ftest/avocado ./*_results.xml
 mkdir -p src/tests/ftest/avocado/job-results
 
 DAOS_BASE=${SL_OMPI_PREFIX%/install}
 if ! pdsh -R ssh -S -w "${HOSTPREFIX}"vm[1-8] "set -ex
+ulimit -c unlimited
 if grep /mnt/daos\\  /proc/mounts; then
     sudo umount /mnt/daos
 else
@@ -112,8 +113,14 @@ logs_dir = $DAOS_BASE/src/tests/ftest/avocado/job-results
 EOF
 
 # nowrun it!
-./launch.py \"${1:-quick}\""; then
-    rc="${PIPESTATUS[0]}"
+if ! ./launch.py \"${1:-quick}\"; then
+    rc=${PIPESTATUS[0]}
+else
+    rc=0
+fi
+ls -l
+exit \$rc"; then
+    rc=${PIPESTATUS[0]}
 else
     rc=0
 fi

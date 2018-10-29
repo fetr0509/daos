@@ -226,7 +226,7 @@ pipeline {
                                   pwd
                                   ls *daos.log* && mv -f *daos.log* "Functional daos_test"/ || true
                                   ls -l "Functional daos_test"/ || true'''
-                            junit 'install/tmp/*results.xml Functional quick/*/results.xml'
+                            junit 'install/tmp/*results.xml Functional daos_test/*/results.xml'
                             archiveArtifacts artifacts: 'Functional daos_test/**'
                         }
                     }

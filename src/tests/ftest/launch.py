@@ -86,6 +86,7 @@ if __name__ == "__main__":
         if sys.argv[1] == '-h' or sys.argv[1] == '--help':
             printhelp()
         test_request = sys.argv[1]
+        addnl_tests = sys.argv[1:]
     else:
         printhelp()
 
@@ -115,14 +116,21 @@ if __name__ == "__main__":
     ignore_errors = ' --ignore-missing-references on'
     category = ' --filter-by-tags=' + test_request
 
+    def run_test(_file):
+        param_file = yamlforpy(_file)
+        params = ' --mux-yaml ' + param_file
+        test_cmd = avocado + ignore_errors + output_options +\
+                   category + params + ' -- ' + _file
+
+        print("Running: " + test_cmd + "\n\n")
+        subprocess.call(test_cmd, shell=True)
+
     # run only provided tagged tests.
     for _file in test_files:
         list_cmd = 'avocado list {0} {1}'.format(category, _file)
         if _file in subprocess.check_output(list_cmd, shell=True):
-            param_file = yamlforpy(_file)
-            params = ' --mux-yaml ' + param_file
-            test_cmd = avocado + ignore_errors + output_options +\
-                       category + params + ' -- ' + _file
+            run_test(_file)
 
-            print("Running: " + test_cmd + "\n\n")
-            subprocess.call(test_cmd, shell=True)
+    # and explicitly listed tests.
+    for _file in addnl_tests:
+        run_test(_file)

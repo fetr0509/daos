@@ -128,32 +128,36 @@ pipeline {
                 }
             }
         }
-        stage('run_test.sh') {
-            agent {
-                label 'single'
-            }
-            steps {
-                runTest stashes: [ 'CentOS-tests', 'CentOS-install', 'CentOS-build-vars' ],
-                        script: 'LD_LIBRARY_PATH=install/lib64:install/lib HOSTPREFIX=wolf-53 bash -x utils/run_test.sh --init && echo "run_test.sh exited successfully with ${PIPESTATUS[0]}" || echo "run_test.sh exited failure with ${PIPESTATUS[0]}"',
-                      junit_files: null
-            }
-            post {
-                /* temporarily moved into runTest->stepResult due to JENKINS-39203
-                success {
-                    githubNotify credentialsId: 'daos-jenkins-commit-status', description: 'run_test.sh',  context: 'test/run_test.sh', status: 'SUCCESS'
-                }
-                unstable {
-                    githubNotify credentialsId: 'daos-jenkins-commit-status', description: 'run_test.sh',  context: 'test/run_test.sh', status: 'FAILURE'
-                }
-                failure {
-                    githubNotify credentialsId: 'daos-jenkins-commit-status', description: 'run_test.sh',  context: 'test/run_test.sh', status: 'ERROR'
-                }
-                */
-                always {
-                    sh '''rm -rf run_test.sh/
-                          mkdir run_test.sh/
-                          [ -f /tmp/daos.log ] && mv /tmp/daos.log run_test.sh/ || true'''
-                    archiveArtifacts artifacts: 'run_test.sh/**'
+        stage('Unit Test') {
+            parallel {
+                stage('run_test.sh') {
+                    agent {
+                        label 'single'
+                    }
+                    steps {
+                        runTest stashes: [ 'CentOS-tests', 'CentOS-install', 'CentOS-build-vars' ],
+                                script: 'LD_LIBRARY_PATH=install/lib64:install/lib HOSTPREFIX=wolf-53 bash -x utils/run_test.sh --init && echo "run_test.sh exited successfully with ${PIPESTATUS[0]}" || echo "run_test.sh exited failure with ${PIPESTATUS[0]}"',
+                              junit_files: null
+                    }
+                    post {
+                        /* temporarily moved into runTest->stepResult due to JENKINS-39203
+                        success {
+                            githubNotify credentialsId: 'daos-jenkins-commit-status', description: 'run_test.sh',  context: 'test/run_test.sh', status: 'SUCCESS'
+                        }
+                        unstable {
+                            githubNotify credentialsId: 'daos-jenkins-commit-status', description: 'run_test.sh',  context: 'test/run_test.sh', status: 'FAILURE'
+                        }
+                        failure {
+                            githubNotify credentialsId: 'daos-jenkins-commit-status', description: 'run_test.sh',  context: 'test/run_test.sh', status: 'ERROR'
+                        }
+                        */
+                        always {
+                            sh '''rm -rf run_test.sh/
+                                  mkdir run_test.sh/
+                                  [ -f /tmp/daos.log ] && mv /tmp/daos.log run_test.sh/ || true'''
+                            archiveArtifacts artifacts: 'run_test.sh/**'
+                        }
+                    }
                 }
             }
         }

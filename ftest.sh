@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -ex
+set -ex -o pipefail
 
 # shellcheck disable=SC1091
 if [ -f .localenv ]; then
@@ -54,7 +54,7 @@ rm -rf src/tests/ftest/avocado ./_results.xml
 mkdir -p src/tests/ftest/avocado/job-results
 
 DAOS_BASE=${SL_OMPI_PREFIX%/install}
-pdsh -R ssh -S -w "${HOSTPREFIX}"vm[1-8] "set -ex
+if ! pdsh -R ssh -S -w "${HOSTPREFIX}"vm[1-8] "set -ex
 if grep /mnt/daos\\  /proc/mounts; then
     sudo umount /mnt/daos
 else
@@ -66,7 +66,10 @@ sudo mkdir -p $DAOS_BASE
 sudo mount -t nfs $NFS_SERVER:$PWD $DAOS_BASE
 sudo mount -t tmpfs -o size=16G tmpfs /mnt/daos
 rm -rf /tmp/Functional_${1:-quick}/
-mkdir -p /tmp/Functional_${1:-quick}/" 2>&1 | dshbak -c
+mkdir -p /tmp/Functional_${1:-quick}/" 2>&1 | dshbak -c; then
+    echo "Cluster setup (i.e. provisioning) failed"
+    exit 1
+fi
 
 # shellcheck disable=SC2154
 trap 'set +e
@@ -116,7 +119,10 @@ else
 fi
 
 # collect the logs
-rpdcp -R ssh -w "${HOSTPREFIX}"vm[1-8] \
-    /tmp/Functional_"${1:-quick}"/\*daos.log "$PWD"/
+if ! rpdcp -R ssh -w "${HOSTPREFIX}"vm[1-8] \
+    /tmp/Functional_"${1:-quick}"/\*daos.log "$PWD"/; then
+    echo "Copying daos.logs from remote nodes failed"
+    # pass
+fi
 ls -l
 exit "$rc"

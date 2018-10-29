@@ -70,7 +70,8 @@ class DaosTestMulti(Test):
         ServerUtils.runServer(self.hostfile, self.server_group, self.basepath)
 
     def tearDown(self):
-        ServerUtils.stopServer(hosts=self.hostlist)
+        if self.hostlist:
+            ServerUtils.stopServer(hosts=self.hostlist)
 
         if self.hostfile is not None:
             os.remove(self.hostfile)

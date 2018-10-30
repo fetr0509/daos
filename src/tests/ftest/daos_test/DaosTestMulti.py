@@ -64,6 +64,7 @@ class DaosTestMulti(Test):
 
         self.server_group = self.params.get("server_group", '/server/', 'daos_server')
         self.daos_test = self.basepath + '/install/bin/daos_test'
+        self.orterun = self.basepath + '/install/bin/orterun'
         self.hostlist = self.params.get("test_machines", '/run/hosts/*')
 
         self.hostfile = WriteHostFile.WriteHostFile(self.hostlist, self.tmp)
@@ -102,7 +103,7 @@ class DaosTestMulti(Test):
 
         subtest = self.params.get("daos_test", '/run/daos_tests/Tests/*')
 
-        cmd = "{0} -{1}".format(self.daos_test, subtest)
+        cmd = "{0} -n 2 {1} -{2}".format(self.orterun, self.daos_test, subtest)
         env = {}
         env['CMOCKA_XML_FILE'] = self.tmp + "/%g_results.xml"
         env['CMOCKA_MESSAGE_OUTPUT'] = "xml"

@@ -103,7 +103,8 @@ class DaosTestMulti(Test):
 
         subtest = self.params.get("daos_test", '/run/daos_tests/Tests/*')
 
-        cmd = "{0} -n 2 {1} -{2}".format(self.orterun, self.daos_test, subtest)
+        cmd = "{0} -n 2 {1} -s 3 -{2}".format(self.orterun,
+                                              self.daos_test, subtest)
         env = {}
         env['CMOCKA_XML_FILE'] = self.tmp + "/%g_results.xml"
         env['CMOCKA_MESSAGE_OUTPUT'] = "xml"

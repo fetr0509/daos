@@ -57,7 +57,7 @@ mdr_stop_pool_svc(void **argv)
 	/* Check the number of pool service replicas. */
 	if (arg->pool.svc.rl_nr < 3) {
 		if (arg->myrank == 0)
-			print_message(">= 3 pool service replicas needed\n");
+			print_message(">= 3 pool service replicas needed; skipping\n");
 		skip = true;
 		goto destroy;
 	}
@@ -128,6 +128,7 @@ mdr_stop_cont_svc(void **argv)
 	daos_handle_t		coh;
 	daos_epoch_state_t	state;
 	daos_epoch_t		epoch;
+	bool			skip = false;
 	int			rc;
 
 	print_message("creating pool\n");
@@ -138,6 +139,7 @@ mdr_stop_cont_svc(void **argv)
 
 	if (arg->pool.svc.rl_nr < 3) {
 		print_message(">= 3 pool service replicas needed; skipping\n");
+		skip = true;
 		goto destroy;
 	}
 
@@ -182,9 +184,13 @@ mdr_stop_cont_svc(void **argv)
 	assert_int_equal(rc, 0);
 
 destroy:
-	print_message("destroying pool\n");
-	rc = daos_pool_destroy(pool_uuid, arg->group, 1, NULL);
-	assert_int_equal(rc, 0);
+	if (arg->myrank == 0) {
+		print_message("destroying pool\n");
+		rc = daos_pool_destroy(pool_uuid, arg->group, 1, NULL);
+		assert_int_equal(rc, 0);
+	}
+	if (skip)
+		skip();
 }
 
 static const struct CMUnitTest mdr_tests[] = {

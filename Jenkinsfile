@@ -225,7 +225,7 @@ pipeline {
                                   mv src/tests/ftest/avocado/job-results/* "Functional daos_test"/
                                   pwd
                                   ls *daos.log* && mv -f *daos.log* "Functional daos_test"/ || true
-                                  ls -l "Functional daos_test"/ || true'''
+                                  find "Functional daos_test"/ -print || true'''
                             junit 'install/tmp/*results.xml Functional daos_test/*/results.xml'
                             archiveArtifacts artifacts: 'Functional daos_test/**'
                         }
